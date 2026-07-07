@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          python -c "import app; print('Backend imports successfully - basic test passed')"
+
+      - name: Build backend Docker image
+        run: docker build -t devops-backend:${{ github.sha }} ./backend
+
+      - name: Build frontend Docker image
+        run: docker build -t devops-frontend:${{ github.sha }} ./frontend
+
+      - name: Tag images
+        run: |
+          docker tag devops-backend:${{ github.sha }} devops-backend:latest
+          docker tag devops-frontend:${{ github.sha }} devops-frontend:latest
+
+      - name: Push to registry (mocked)
+        run: |
+          echo "Mock push: devops-backend:${{ github.sha }} -> ACR/ECR"
+          echo "Mock push: devops-frontend:${{ github.sha }} -> ACR/ECR"
+          echo "In production, this step would run 'docker push' after 'docker login' to ACR or ECR using secrets."
+
+      - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to Kubernetes (mocked)
+        run: |
+          echo "Mock deploy: kubectl apply -f k8s/ would run here"
+          echo "In production, this would connect to AKS/EKS using a stored kubeconfig secret and run kubectl apply."
