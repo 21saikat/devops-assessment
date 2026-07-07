@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DevOps Assessment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 20px;
+            background: #f4f6f8;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .ok { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>DevOps Assessment Frontend</h1>
+        <p>Backend theke live status check korche:</p>
+        <div id="status" class="status">Loading...</div>
+    </div>
+
+    <script>
+        // Backend URL - environment onujayi change hote pare
+        const BACKEND_URL = window.BACKEND_URL || 'http://20.51.179.231:8080';
+
+        async function checkBackend() {
+            const statusEl = document.getElementById('status');
+            try {
+                const res = await fetch(BACKEND_URL + '/health');
+                const data = await res.json();
+                statusEl.textContent = 'Backend Status: ' + data.status;
+                statusEl.className = 'status ok';
+            } catch (err) {
+                statusEl.textContent = 'Backend theke connect kora jacche na';
+                statusEl.className = 'status error';
+            }
+        }
+
+        checkBackend();
+    </script>
+</body>
+</html>
